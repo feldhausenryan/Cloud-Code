@@ -6,11 +6,22 @@ import re
 big_dict = {}
 
 def read_python_file(filename):
+    print "Python file : " + filename
     global big_dict
     f = open(filename, 'r')
     for line in f:
         if line[0] == "#":
             for word in line[1:].split():
+                stripped_word = (re.sub(r'\W+', '', word)).lower()
+                #stripped_word = word
+                if (len(stripped_word)+3 < len(word)):
+                    continue
+                try:
+                    big_dict[stripped_word] += 1
+                except:
+                    big_dict[stripped_word] = 1
+        elif line[0:3] == "'''":
+            for word in line[3:-3].split():
                 stripped_word = (re.sub(r'\W+', '', word)).lower()
                 #stripped_word = word
                 if (len(stripped_word)+3 < len(word)):
