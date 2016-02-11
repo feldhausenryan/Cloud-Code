@@ -17,9 +17,10 @@ def read_python_file(filename):
                 if (len(stripped_word)+3 < len(word)):
                     continue
                 try:
-                    big_dict[stripped_word] += 1
+                    big_dict[stripped_word].add(filename)
                 except:
-                    big_dict[stripped_word] = 1
+                    big_dict[stripped_word] = set()
+                    big_dict[stripped_word].add(filename)
         elif line[0:3] == "'''":
             for word in line[3:-3].split():
                 stripped_word = (re.sub(r'\W+', '', word)).lower()
@@ -27,9 +28,10 @@ def read_python_file(filename):
                 if (len(stripped_word)+3 < len(word)):
                     continue
                 try:
-                    big_dict[stripped_word] += 1
+                    big_dict[stripped_word].add(filename)
                 except:
-                    big_dict[stripped_word] = 1
+                    big_dict[stripped_word] = set()
+                    big_dict[stripped_word].add(filename)
 
 if __name__ == "__main__":
     #Obtain input directory name from user
