@@ -2,6 +2,11 @@
 def print_hello_world():
     print "Hello World!"
 
+#Double hashtag comment
+#Double hashtag comment
+def comment_test_zero():
+    pass
+
 '''Comment test type one'''
 def comment_test_one():
     pass

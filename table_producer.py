@@ -7,7 +7,6 @@ import re
 def open_and_parse_json(filename):
     f = open(filename, 'r')
     raw_contents = f.read()
-    print raw_contents
     f.close()
     contents = json.loads(raw_contents)
     return contents
@@ -19,7 +18,7 @@ def save_json_overwrite(filename, content):
     
 def create_default_configuration():
     f = open("configuration.txt", 'w+')
-    f.write('{"table_path": "test_table", "code_base_path": "test_code_base", "table_name": "test_table.dat"}')
+    f.write('{"table_path": "test_table", "code_base_path": "test_code_base", "table_name": "test_table.dat", "segment_path": "test_segment_base"}')
     f.close()
 
 def create_default_table(table_name):
@@ -27,7 +26,7 @@ def create_default_table(table_name):
     f.write('{}')
     f.close()
 
-def make_table():
+def make_table(configuration):
     #The table to fill up
     table = {}
 
@@ -66,7 +65,7 @@ def make_table():
                 #If that extension is a python file...
                 if (split_file_name[1] == "py"):
                     #Python file
-                    table = read_python_file(file_name, table)
+                    table = read_python_file(file_name, table, configuration)
                 #If that extension is not a python file...
                 else:
                     #Not a python file
@@ -79,14 +78,34 @@ def distribute_words_from_line(input_line, filename, table):
     for word in input_line.split():
         stripped_word = (re.sub(r'\W+', '', word)).lower()
         if (len(stripped_word)+non_alphanumeric_character_threshold < len(word)):
-            return
+            return table
         try:
             table[stripped_word].append(filename)
         except:
             table[stripped_word] = []
             table[stripped_word].append(filename)
     return table
-    
+
+def code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration):
+    segment_filename = filename.split('.')[0]+"_"+str(index_of_code_segments)+".py"
+    print segment_filename
+    #print comment
+    #print code
+    current_directory = os.getcwd()
+    segment_base_directory = configuration["segment_path"]
+    os.chdir(segment_base_directory)
+    f = open(segment_filename, "w+")
+    f.write("'''\n"+comment.strip()+"\n'''\n")
+    f.write(code)
+    f.close()
+    if comment.strip() == "":
+        os.chdir(current_directory)
+        return table
+    table = distribute_words_from_line(comment, segment_filename, table)
+    os.chdir(current_directory)    
+    return table
+
+"""
 def read_python_file(filename, table):
     print "Python file : " + filename
     f = open(filename, 'r')
@@ -99,18 +118,19 @@ def read_python_file(filename, table):
             switch = 2
             table = distribute_words_from_line(line[3:-3], filename, table)
     return table
-
+"""
 
 #TODO HERE  PARSE OUT THE COMMENT TO WORDS
 #           MAKE A NEW FILE FOR EACH FUNCTION (temp  + temp2)
-def read_python_file(filename, table):
+def read_python_file(filename, table, configuration):
+    index_of_code_segments = 0
     print "Python file : " + filename
     f = open(filename, 'r')
     state = "neutral"
     temp = ""
     temp2 = ""
+    
     for line in f:
-        #print line[:3], line[-4:-1], 'TESTETsTSTE'
         if state == "long_comment_a":
             if line[-4:-1] == "'''":
                 temp += line[:-4]
@@ -125,15 +145,33 @@ def read_python_file(filename, table):
                 state = "post_comment"
             else:
                 temp += line
-        elif line[0] == "#":
+        elif (line[0] == "#") and state == "live_code":
+            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
+            state = "post_comment"
+            temp = line
+            temp2= ""
+            index_of_code_segments += 1
+        elif (line[:3] == "'''") and state == "live_code":
+            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
+            state = "long_comment_a"
+            temp = line
+            temp2= ""
+            index_of_code_segments += 1
+        elif (line[:3] == '"""') and state == "live_code":
+            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
+            state = "long_comment_b"
+            temp = line
+            temp2= ""
+            index_of_code_segments += 1
+        elif line[0] == "#" and state != "long_comment_a" and state != "long_comment_b":
             temp += line[1:]
             #RUN
             state = "post_comment"
-        elif line[:3] == "'''" and line[-4:-1] == "'''":
+        elif line[:3] == "'''" and line[-4:-1] == "'''" and len(line) > 4:
             state = "post_comment"
             temp = line[3:-4]
             #RUN
-        elif line[:3] == '"""' and line[-4:-1] == '"""':
+        elif line[:3] == '"""' and line[-4:-1] == '"""' and len(line) > 4:
             state = "post_comment"
             temp = line[3:-4]
             #RUN
@@ -144,19 +182,26 @@ def read_python_file(filename, table):
             state = "long_comment_b"
             temp = line[3:]
         elif state == "post_comment" and line[:3] == "def":
+            if filename == "Challenge7.py":
+                print line
             state = "live_code"
             temp2 += line
-        elif state == "live_code" and (line[0] == " "):
+        elif state == "live_code" and (line[0] == " " or len(line.strip()) == 0):
+            #if filename == "Challenge7.py":
+                #print line
+                #print line[0]+"<-- line[0]\t\t\t"+str(len(line.strip()))+"<-- len"
             temp2 += line
         elif state == "live_code":
             state = "neutral"
-            print "--------------------------------------COMMENT-------------------------------------------"
-            print temp.strip()
-            print "---------------------------------------CODE---------------------------------------------"
-            print temp2[:-1].strip()
-            print "========================================================================================"
+            #print "--------------------------------------COMMENT-------------------------------------------"
+            #print temp.strip()
+            #print "---------------------------------------CODE---------------------------------------------"
+            #print temp2[:-1].strip()
+            #print "========================================================================================"
+            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
             temp = ""
             temp2 = ""
+            index_of_code_segments += 1
             #RUN
         elif state == "post_comment":
             state = "neutral"
@@ -164,6 +209,16 @@ def read_python_file(filename, table):
             temp2 = ""
         else:
             state = "neutral"
+        
+        #if filename == "lab9_start.py":
+        #    spaces = " "*(150-len(line.strip()))
+        #    print line.strip()+spaces+state
+    if state == "live_code":
+        table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
+        temp = ""
+        temp2 = ""
+        index_of_code_segments += 1
+    return table
             
         
 
@@ -210,6 +265,26 @@ if __name__ == "__main__":
             print "Failure - Created Path"
             continue
 
+        print "Getting Segment Path Name...\t\t",
+        try:
+            segment_path = configuration["segment_path"]
+            print "Success"
+        except:
+            create_default_configuration()
+            print "Failure - Created Default Configuration"
+            continue
+
+        print "Checking Segment Directory...\t\t",
+        try:
+            os.chdir(segment_path)
+            configuration["segment_path"] = os.getcwd()
+            os.chdir(starting_path)
+            print "Success"
+        except:
+            os.mkdir(segment_path)
+            print "Failure - Created Path"
+            continue
+        
         '''
         print "Opening Table...\t\t\t",
         try:
@@ -245,7 +320,7 @@ if __name__ == "__main__":
 
     print "Making Database..." 
     os.chdir(code_base_path)
-    table = make_table()
+    table = make_table(configuration)
     print "-----------------------------------------------"
     print "Saving...\t\t\t\t",
     os.chdir(starting_path)
