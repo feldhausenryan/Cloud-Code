@@ -182,8 +182,8 @@ def read_python_file(filename, table, configuration):
             state = "long_comment_b"
             temp = line[3:]
         elif state == "post_comment" and line[:3] == "def":
-            if filename == "Challenge7.py":
-                print line
+            #if filename == "Challenge7.py":
+            #    print line
             state = "live_code"
             temp2 += line
         elif state == "live_code" and (line[0] == " " or len(line.strip()) == 0):
@@ -276,6 +276,9 @@ if __name__ == "__main__":
 
         print "Checking Segment Directory...\t\t",
         try:
+            import shutil
+            shutil.rmtree(segment_path, ignore_errors=True)
+            os.mkdir(segment_path)            
             os.chdir(segment_path)
             configuration["segment_path"] = os.getcwd()
             os.chdir(starting_path)
