@@ -1,7 +1,5 @@
-'''
-'''Comment test type
-three
-'''
-def comment_test_one():
-    pass
-
+#Painful Test One
+def Painful():
+    def Painful2():
+        pass
+    Painful2()

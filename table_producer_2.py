@@ -95,7 +95,7 @@ def code_segments_to_file(table, index_of_code_segments, comment, code, filename
     segment_base_directory = configuration["segment_path"]
     os.chdir(segment_base_directory)
     f = open(segment_filename, "w+")
-    f.write("'''\n"+comment.strip()+"\n'''\n")
+    f.write(comment)
     f.write(code)
     f.close()
     if comment.strip() == "":
@@ -121,104 +121,140 @@ def read_python_file(filename, table):
 """
 
 #TODO HERE  PARSE OUT THE COMMENT TO WORDS
-#           MAKE A NEW FILE FOR EACH FUNCTION (temp  + temp2)
+#MAKE A NEW FILE FOR EACH FUNCTION (temp  + temp2)
 def read_python_file(filename, table, configuration):
     index_of_code_segments = 0
-    print "Python file : " + filename
+    #print "Python file : " + filename
     f = open(filename, 'r')
     state = "neutral"
-    temp = ""
-    temp2 = ""
-    
+    comment = ""
+    code = ""
+    offset = 0
+    prevline = ""
     for line in f:
-        if state == "long_comment_a":
-            if line[-4:-1] == "'''":
-                temp += line[:-4]
-                #RUN
+        #if filename == "hw6sol2.py":
+        #    spaces = " "*(100-len(prevline[:-1]))
+        #    print prevline[:-1]+spaces+state
+        prevline = line
+        if state == "neutral":
+            if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
                 state = "post_comment"
-            else:
-                temp += line
-        elif state == "long_comment_b":
-            if line[-4:-1] == '"""':
-                temp += line[:-4]
-                #RUN
+                comment += line
+                continue
+            elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
                 state = "post_comment"
+                comment += line
+                continue
+            elif line[:3] == "'''":
+                state = "apo_comment"
+                comment += line
+                continue
+            elif line[:3] == '"""':
+                state = "quo_comment"
+                comment += line
+                continue
+            elif line[0] == '#':
+                state = "post_comment"
+                comment += line
+                continue
             else:
-                temp += line
-        elif (line[0] == "#") and state == "live_code":
-            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
-            state = "post_comment"
-            temp = line
-            temp2= ""
-            index_of_code_segments += 1
-        elif line[0] == "#" and state != "long_comment_a" and state != "long_comment_b":
-            temp += line[1:]
-            #RUN
-            state = "post_comment"
-        elif line[:3] == "'''" and line[-4:-1] == "'''" and len(line) > 4:
-            print "CAUGHT IT"
-            state = "post_comment"
-            temp = line[3:-4]
-            #RUN
-        elif line[:3] == '"""' and line[-4:-1] == '"""' and len(line) > 4:
-            state = "post_comment"
-            temp = line[3:-4]
-            #RUN
-        elif (line[:3] == "'''") and state == "live_code":
-            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
-            state = "long_comment_a"
-            temp = line
-            temp2= ""
-            index_of_code_segments += 1
-        elif (line[:3] == '"""') and state == "live_code":
-            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
-            state = "long_comment_b"
-            temp = line
-            temp2= ""
-            index_of_code_segments += 1
-        elif line[:3] == "'''":
-            state = "long_comment_a"
-            temp = line[3:]
-        elif line[:3] == '"""':
-            state = "long_comment_b"
-            temp = line[3:]
-        elif state == "post_comment" and line[:3] == "def":
-            #if filename == "Challenge7.py":
-            #    print line
-            state = "live_code"
-            temp2 += line
-        elif state == "live_code" and (line[0] == " " or len(line.strip()) == 0):
-            #if filename == "Challenge7.py":
-                #print line
-                #print line[0]+"<-- line[0]\t\t\t"+str(len(line.strip()))+"<-- len"
-            temp2 += line
-        elif state == "live_code":
-            state = "neutral"
-            #print "--------------------------------------COMMENT-------------------------------------------"
-            #print temp.strip()
-            #print "---------------------------------------CODE---------------------------------------------"
-            #print temp2[:-1].strip()
-            #print "========================================================================================"
-            table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
-            temp = ""
-            temp2 = ""
-            index_of_code_segments += 1
-            #RUN
+                continue
+        elif state == "live":
+            if len(line.strip()) == 0:
+                continue
+            if line[offset] == " " or line[offset] == '\t':
+                code += line
+                continue
+            else:
+                state = "neutral"
+                #print "-"*100+filename
+                table = code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration)
+                index_of_code_segments += 1
+                #print comment
+                #print code
+                #print "^"*100
+                comment = ""
+                code = ""
+                offset = 0
+                if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
+                    state = "post_comment"
+                    comment += line
+                    continue
+                elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
+                    state = "post_comment"
+                    comment += line
+                    continue
+                elif line[:3] == "'''":
+                    state = "apo_comment"
+                    comment += line
+                    continue
+                elif line[:3] == '"""':
+                    state = "quo_comment"
+                    comment += line
+                    continue
+                elif line[0] == '#':
+                    state = "post_comment"
+                    comment += line
+                    continue
+                else:
+                    continue
+                continue
+        elif state == "apo_comment":
+            if line.strip()[-3:] == "'''":
+                state = "post_comment"
+                comment += line
+                continue
+            else:
+                comment += line
+                continue
+        elif state == "quo_comment":
+            if line.strip()[-3:] == '"""':
+                state = "post_comment"
+                comment += line
+                continue
+            else:
+                comment += line
+                continue
         elif state == "post_comment":
-            state = "neutral"
-            temp = ""
-            temp2 = ""
-        else:
-            state = "neutral"
-        
-        #if filename == "lab9_start.py":
-        spaces = " "*(50-len(line.strip()))
-        print line.strip()+spaces+state
-    if state == "live_code":
-        table = code_segments_to_file(table, index_of_code_segments, temp, temp2, filename, configuration)
-        temp = ""
-        temp2 = ""
-        index_of_code_segments += 1
+            if line.strip()[:3] == "def":
+                state = "live"
+                code += line
+                offset = line.index("def")
+                continue
+            else:
+                state = "neutral"
+                if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
+                    state = "post_comment"
+                    comment += line
+                    continue
+                elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
+                    state = "post_comment"
+                    comment += line
+                    continue
+                elif line[:3] == "'''":
+                    state = "apo_comment"
+                    comment += line
+                    continue
+                elif line[:3] == '"""':
+                    state = "quo_comment"
+                    comment += line
+                    continue
+                elif line[0] == '#':
+                    state = "post_comment"
+                    comment += line
+                    continue
+                else:
+                    code = ""
+                    comment = ""
+                    offset = 0
+                    continue
+                continue
+    if state == "live":
+        table = code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration)
+        #print "-"*100+filename
+        #print comment
+        #print code
+        #print "^"*100
     return table
             
         
@@ -277,9 +313,11 @@ if __name__ == "__main__":
 
         print "Checking Segment Directory...\t\t",
         try:
-            #import shutil
-            #shutil.rmtree(segment_path, ignore_errors=True)
-            #os.mkdir(segment_path)            
+            import shutil
+            shutil.rmtree(segment_path, ignore_errors=True)
+            os.mkdir(segment_path)
+            import time
+            time.sleep(1)
             os.chdir(segment_path)
             configuration["segment_path"] = os.getcwd()
             os.chdir(starting_path)

@@ -1,10 +1,6 @@
+#Painful Test Two
 '''
-"""Comment test type four"""
-def comment_test_one():
-    pass
 
-"""Comment test type five
 '''
-def comment_test_one():
+def Painful3():
     pass
-

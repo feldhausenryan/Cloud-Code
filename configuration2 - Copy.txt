@@ -1,1 +1,0 @@
-{"table_path": "test_table", "code_base_path": "test_code_base", "table_name": "test_table.dat"}
