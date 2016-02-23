@@ -131,19 +131,19 @@ if __name__ == "__main__":
         for word in parsed_input_line:
             try:
                 value = database[word]
-                word_values.append(set(value))
+                word_values.append([set(value[1]),value[0]])
                 existing.append(word)
             except:
                 missing.append(word)
                 continue
 
         if len(word_values) == 0:
-            print "No Results"
+            print "No Results, no words matched at all"
             continue
-        
-        intersection = word_values[0]
+        sorted(word_values, key=lambda index_value: index_value[1], reverse=True)
+        intersection = word_values[0][0]
         for value in word_values:
-            intersection = intersection.intersection(value)
+            intersection = intersection.intersection(value[0])
         print "Searched: "+str(existing)+"\t\tMissing: "+str(missing)
         print "Results: "+str(len(intersection))
         for value in intersection:
