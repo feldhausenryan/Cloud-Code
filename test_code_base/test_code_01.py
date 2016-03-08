@@ -11,7 +11,7 @@ def print_hello_world():
     print "Hello World!"
 
 #Painful Test One
-def Painful():
+def Test1():
     def Painful2():
         pass
     Painful2()
@@ -20,7 +20,7 @@ def Painful():
 '''
 
 '''
-def Painful3():
+def Test2():
     pass
 
 #Painfull Test Four
@@ -31,7 +31,7 @@ def Painful3():
 """
 #
 '''
-def Painful4():
+def Test3():
     pass
 
 #Double hashtag comment
