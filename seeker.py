@@ -1,6 +1,14 @@
 import os
 import json
 
+def truncate(f, n):
+    '''Truncates/pads a float f to n decimal places without rounding'''
+    s = '{}'.format(f)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(f, n)
+    i, p, d = s.partition('.')
+    return '.'.join([i, (d+'0'*n)[:n]])
+
 #CC: Read a file located in a specified path and print the file to the terminal.
 def print_code_segment(filename, path):
     starting_path = os.getcwd()
@@ -156,7 +164,17 @@ if __name__ == "__main__":
             print_code_segment(value, configuration["segment_path"])
 
         '''
-
+        d_keys = database.keys()
+        #print d_keys
+        d_pairs = []
+        for x in d_keys:
+            d_pairs.append([database[x][0],x])
+        d_pairs = sorted(d_pairs, reverse=True)
+        #print d_pairs
+        for x in range(0, 50):
+            #print d_pairs[x][1]
+            break
+        
         input_line = raw_input("SEARCH : ").lower()
         parsed_input_line = input_line.split()
 
@@ -168,18 +186,38 @@ if __name__ == "__main__":
                 value = database[word]
                 files = value[1]
                 sorted(files)
-                word_values.append([(files, int(value[0]))])
+                word_values.append([files, int(value[0]), word])
+                #print word_values
             except:
                 missing.append(word)
 
         if len(word_values) == 0:
             print "No Results. No Words Matched."
             continue
-        sorted(word_values, key=lambda index_value: index_value[1], reverse=True)
+        word_values = sorted(word_values, key=lambda index_value: index_value[1], reverse=False)
+        itr_list = [0]*(len(word_values)-1)
+        match_data = []
 
-
+        #print "len(itr_list) =  " + str(len(itr_list))
         for least_common_filename in word_values[0][0]:
-            itr_list = [0,True]*(len(word_values)-1)
-            
+            match_count = 1
+            missing_sub = []
+            for itr_list_index in range(0, len(itr_list)):
+                #print "itr_list_index = " + str(itr_list_index)
+                try:
+                    while(word_values[itr_list_index+1][0][itr_list[itr_list_index]] < least_common_filename):
+                        itr_list[itr_list_index] += 1
+                except:
+                    missing_sub.append(word_values[itr_list_index+1][2])
+                    continue
+                if (word_values[itr_list_index+1][0][itr_list[itr_list_index]] == least_common_filename):
+                    match_count += 1
+                    continue
+                missing_sub.append(word_values[itr_list_index+1][2])
+            match_data.append([truncate(float(match_count)/len(parsed_input_line),3), least_common_filename, missing_sub+missing])
+
+        match_data = sorted(match_data, key=lambda index_value: index_value[0], reverse=True)
+        for item in match_data:
+            print item
             
         

@@ -107,59 +107,21 @@ def code_segments_to_file(table, index_of_code_segments, comment, code, filename
 #TODO HERE  PARSE OUT THE COMMENT TO WORDS
 #MAKE A NEW FILE FOR EACH FUNCTION (temp  + temp2)
 def read_python_file(filename, table, configuration):
-    index_of_code_segments = 0
-    #print "Python file : " + filename
-    f = open(filename, 'r')
-    state = "neutral"
-    comment = ""
-    code = ""
-    offset = 0
-    prevline = ""
-    for line in f:
-        #if filename == "hw6sol2.py":
-        #    spaces = " "*(100-len(prevline[:-1]))
-        #    print prevline[:-1]+spaces+state
-        prevline = line
-        if state == "neutral":
-            if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
-                state = "post_comment"
-                comment += line
-                continue
-            elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
-                state = "post_comment"
-                comment += line
-                continue
-            elif line[:3] == "'''":
-                state = "apo_comment"
-                comment += line
-                continue
-            elif line[:3] == '"""':
-                state = "quo_comment"
-                comment += line
-                continue
-            elif line[0] == '#':
-                state = "post_comment"
-                comment += line
-                continue
-            else:
-                continue
-        elif state == "live":
-            if len(line.strip()) == 0:
-                continue
-            if line[offset] == " " or line[offset] == '\t':
-                code += line
-                continue
-            else:
-                state = "neutral"
-                #print "-"*100+filename
-                table = code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration)
-                index_of_code_segments += 1
-                #print comment
-                #print code
-                #print "^"*100
-                comment = ""
-                code = ""
-                offset = 0
+    try:
+        index_of_code_segments = 0
+        #print "Python file : " + filename
+        f = open(filename, 'r')
+        state = "neutral"
+        comment = ""
+        code = ""
+        offset = 0
+        prevline = ""
+        for line in f:
+            #if filename == "hw6sol2.py":
+            #    spaces = " "*(100-len(prevline[:-1]))
+            #    print prevline[:-1]+spaces+state
+            prevline = line
+            if state == "neutral":
                 if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
                     state = "post_comment"
                     comment += line
@@ -182,63 +144,105 @@ def read_python_file(filename, table, configuration):
                     continue
                 else:
                     continue
-                continue
-        elif state == "apo_comment":
-            if line.strip()[-3:] == "'''":
-                state = "post_comment"
-                comment += line
-                continue
-            else:
-                comment += line
-                continue
-        elif state == "quo_comment":
-            if line.strip()[-3:] == '"""':
-                state = "post_comment"
-                comment += line
-                continue
-            else:
-                comment += line
-                continue
-        elif state == "post_comment":
-            if line.strip()[:3] == "def":
-                state = "live"
-                code += line
-                offset = line.index("def")
-                continue
-            else:
-                state = "neutral"
-                if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
-                    state = "post_comment"
-                    comment += line
+            elif state == "live":
+                if len(line.strip()) == 0:
                     continue
-                elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
-                    state = "post_comment"
-                    comment += line
-                    continue
-                elif line[:3] == "'''":
-                    state = "apo_comment"
-                    comment += line
-                    continue
-                elif line[:3] == '"""':
-                    state = "quo_comment"
-                    comment += line
-                    continue
-                elif line[0] == '#':
-                    state = "post_comment"
-                    comment += line
+                if line[offset] == " " or line[offset] == '\t':
+                    code += line
                     continue
                 else:
-                    code = ""
+                    state = "neutral"
+                    #print "-"*100+filename
+                    table = code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration)
+                    index_of_code_segments += 1
+                    #print comment
+                    #print code
+                    #print "^"*100
                     comment = ""
+                    code = ""
                     offset = 0
+                    if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
+                        state = "post_comment"
+                        comment += line
+                        continue
+                    elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
+                        state = "post_comment"
+                        comment += line
+                        continue
+                    elif line[:3] == "'''":
+                        state = "apo_comment"
+                        comment += line
+                        continue
+                    elif line[:3] == '"""':
+                        state = "quo_comment"
+                        comment += line
+                        continue
+                    elif line[0] == '#':
+                        state = "post_comment"
+                        comment += line
+                        continue
+                    else:
+                        continue
                     continue
-                continue
-    if state == "live":
-        table = code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration)
-        #print "-"*100+filename
-        #print comment
-        #print code
-        #print "^"*100
+            elif state == "apo_comment":
+                if line.strip()[-3:] == "'''":
+                    state = "post_comment"
+                    comment += line
+                    continue
+                else:
+                    comment += line
+                    continue
+            elif state == "quo_comment":
+                if line.strip()[-3:] == '"""':
+                    state = "post_comment"
+                    comment += line
+                    continue
+                else:
+                    comment += line
+                    continue
+            elif state == "post_comment":
+                if line.strip()[:3] == "def":
+                    state = "live"
+                    code += line
+                    offset = line.index("def")
+                    continue
+                else:
+                    state = "neutral"
+                    if line[:3] == "'''" and line.strip()[-3:] == "'''" and len(line) >= 7:
+                        state = "post_comment"
+                        comment += line
+                        continue
+                    elif line[:3] == '"""' and line.strip()[-3:] == '"""' and len(line) >= 7:
+                        state = "post_comment"
+                        comment += line
+                        continue
+                    elif line[:3] == "'''":
+                        state = "apo_comment"
+                        comment += line
+                        continue
+                    elif line[:3] == '"""':
+                        state = "quo_comment"
+                        comment += line
+                        continue
+                    elif line[0] == '#':
+                        state = "post_comment"
+                        comment += line
+                        continue
+                    else:
+                        code = ""
+                        comment = ""
+                        offset = 0
+                        continue
+                    continue
+        if state == "live":
+            table = code_segments_to_file(table, index_of_code_segments, comment, code, filename, configuration)
+            #print "-"*100+filename
+            #print comment
+            #print code
+            #print "^"*100
+        return table
+    except:
+        return table
     return table
             
         
@@ -254,6 +258,7 @@ if __name__ == "__main__":
             configuration = open_and_parse_json(configuration_filename)
             print "Success"
         except:
+            raise
             create_default_configuration()
             print "Failure - Created Default Configuration"
             continue
