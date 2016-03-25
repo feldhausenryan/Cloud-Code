@@ -27,6 +27,8 @@ def index(request):
     html_insert += '<a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a></div><div class=SEARCH_RESULT_DESC>'
     html_insert += item[1]
     html_insert += "</div></div>"
+
+  html_insert = html_insert.replace('\n', '<br>')
   
   HTML_RESPONSE = """<!DOCTYPE html>
 <html>
