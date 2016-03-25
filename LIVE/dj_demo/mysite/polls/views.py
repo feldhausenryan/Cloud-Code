@@ -5,7 +5,8 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 def index(request):
-  print request.resolver_match.url_name
+  print request.GET.get('search', '')
+  
   
   HTML_RESPONSE = """<!DOCTYPE html>
 <html>
@@ -34,7 +35,7 @@ def index(request):
             <div class=SEARCH>
                 <div class=VER_SERACH>
                     <form action="response.html">
-                        <input type="search" style="width: 250px;" name="search_box">
+                        <input type="search" style="width: 250px;" name="search">
                         <input type="submit" value="Go">
                     </form>
                 </div>
