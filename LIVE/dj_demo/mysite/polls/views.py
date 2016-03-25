@@ -7,7 +7,7 @@ from django.http import HttpResponse
 
 def index(request):
   search_terms = request.GET.get('search', '')
-  result_list = cloud_code_search(search_terms)
+  result_list = cloud_code_search.cloud_code_search(search_terms)
   html_insert = ""
   '''
   <div class=SEARCH_RESULT>
