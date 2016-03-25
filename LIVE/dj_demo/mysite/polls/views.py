@@ -1,12 +1,31 @@
 from django.shortcuts import render
+import cloud_code_search
 
 # Create your views here.
 
 from django.http import HttpResponse
 
 def index(request):
-  print request.GET.get('search', '')
-  
+  search_terms = request.GET.get('search', '')
+  result_list = cloud_code_search(search_terms)
+  html_insert = ""
+  '''
+  <div class=SEARCH_RESULT>
+      <div class=SEARCH_RESULT_TITLE>
+          Return_Spliced_List_From_String() 
+          <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
+      </div>
+      <div class=SEARCH_RESULT_DESC>
+          Description of the code above
+      </div>
+  </div>
+  '''
+  for item in result_list:
+    html_insert += "<div class=SEARCH_RESULT><div class=SEARCH_RESULT_TITLE>"
+    html_insert += item[0]
+    html_insert += '<a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a></div><div class=SEARCH_RESULT_DESC>'
+    html_insert += item[1]
+    html_insert += "</div></div>"
   
   HTML_RESPONSE = """<!DOCTYPE html>
 <html>
@@ -48,88 +67,7 @@ def index(request):
         
         <div class=BOT_SPACER>
         </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        <div class=SEARCH_RESULT>
-            <div class=SEARCH_RESULT_TITLE>
-                Return_Spliced_List_From_String() 
-                <a href="http://stackoverflow.com/questions/796087/make-a-div-into-a-link"><span></span></a>
-            </div>
-            <div class=SEARCH_RESULT_DESC>
-                Description of the code above
-            </div>
-        </div>
-        
-        
+        """ + html_insert + """
     </div>
 </body>
 
