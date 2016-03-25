@@ -3,7 +3,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from . import views
 
-urlpatterns = [url(r'^.*$', views.index, name='index'),]
-urlpatterns += staticfiles_urlpatterns()
+
+urlpatterns = staticfiles_urlpatterns()
+urlpatterns += [url(r'^.*$', views.index, name='index'),]
 
 #http://162.243.219.59/
