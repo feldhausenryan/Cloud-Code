@@ -28,6 +28,9 @@ def open_and_parse_json(filename):
     return contents
 
 def cloud_code_search(input_line):
+
+    print os.getcwd()
+    
     database = {}
     return_path = os.getcwd()
     os.chdir("test_table")
