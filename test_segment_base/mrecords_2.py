@@ -1,0 +1,3 @@
+#....................................................................
+def addfield(mrecord, newfield, newfieldname=None):
+    """Adds a new field to the masked record array, using `newfield` as data
